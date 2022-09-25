@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -14,7 +14,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException userNotFoundException,
                                                          WebRequest webRequest){
-        ErrorDetails errorDetails = new ErrorDetails(new Date(),
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(),
                 userNotFoundException.getMessage(),
                 HttpStatus.NOT_FOUND,
                 webRequest.getDescription(false));
@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserCreationException.class)
     public ResponseEntity<?> handleUserCreationException(UserCreationException userCreationException,
                                                          WebRequest webRequest){
-        ErrorDetails errorDetails = new ErrorDetails(new Date(),
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(),
                 userCreationException.getMessage(),
                 HttpStatus.CONFLICT,
                 webRequest.getDescription(false));
@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserUpdateException.class)
     public ResponseEntity<?> handleUserUpdateException(UserUpdateException userUpdateException,
                                                          WebRequest webRequest){
-        ErrorDetails errorDetails = new ErrorDetails(new Date(),
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(),
                 userUpdateException.getMessage(),
                 HttpStatus.CONFLICT,
                 webRequest.getDescription(false));
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGlobalException(Exception exception,
                                                        WebRequest webRequest){
-        ErrorDetails errorDetails = new ErrorDetails(new Date(),
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(),
                 exception.getMessage(),
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 webRequest.getDescription(false));

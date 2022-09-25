@@ -33,11 +33,16 @@ public class Users {
                                  @RequestParam(required = false) Integer flatNumber,
                                  @RequestParam(required = false) String phoneNumber){
         Properties properties = null;
-        LocalDate birthDateTemp = LocalDate.of(
+        LocalDate birthDateTemp;
+        try {
+        birthDateTemp = LocalDate.of(
                 Integer.parseInt(birthDate.substring(0,4)),
                 Integer.parseInt(birthDate.substring(5,7)),
                 Integer.parseInt(birthDate.substring(8,10))
-        );
+            );
+        } catch (IndexOutOfBoundsException e) {
+            throw new UserCreationException("User creation process error");
+        }
         Integer dateDifference = LocalDate.now()
                 .minus(Period.ofYears(birthDateTemp.getYear()))
                 .minus(Period.ofMonths(birthDateTemp.getMonthValue()))
@@ -88,8 +93,8 @@ public class Users {
     }
 
     // one/some fields
-    @PutMapping("/all_users/{id}")
-    public ResponseEntity<User> updateUserById(@PathVariable(value = "id") Long id,
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<User> updateUserByIdSomeFields(@PathVariable(value = "id") Long id,
                                @RequestParam(required = false) String email,
                                @RequestParam(required = false) String firstName,
                                @RequestParam(required = false) String lastName,
@@ -127,29 +132,40 @@ public class Users {
         throw new UserNotFoundException("User not found with this id : " + id);
     }
 
-//    // all fields
-//    @PutMapping("/all_users/{id}/full_update")
-//    public ResponseEntity<User> updateUserById(@PathVariable(value = "id") Long id,
-//                               @RequestBody User userDetails){
-//        Optional<User> tempUser = userService.getUserById(id);
-//        if(tempUser.isPresent()){
-//            tempUser.get().setEmail(userDetails.getEmail());
-//            tempUser.get().setFirstName(userDetails.getFirstName());
-//            tempUser.get().setLastName(userDetails.getLastName());
-//            tempUser.get().setBirthDate(userDetails.getBirthDate());
-//            tempUser.get().setStreetName(userDetails.getStreetName());
-//            tempUser.get().setBuildingNumber(userDetails.getBuildingNumber());
-//            tempUser.get().setFlatNumber(userDetails.getFlatNumber());
-//            tempUser.get().setPhoneNumber(userDetails.getPhoneNumber());
-//            if(userService.updateUser(tempUser.get()))
-//                return ResponseEntity.ok(tempUser.get());
-//            throw new UserUpdateException("User with this email already exists : " + tempUser.get().getEmail());
-//        }
-//        throw new UserNotFoundException("User not found with this id : " + id);
-//    }
+    // all fields
+    @PutMapping("/update/{id}")
+    public ResponseEntity<User> updateUserByIdAllFields(@PathVariable(value = "id") Long id,
+                                               @RequestParam String email,
+                                               @RequestParam String firstName,
+                                               @RequestParam String lastName,
+                                               @RequestParam String birthDate,
+                                               @RequestParam String streetName,
+                                               @RequestParam Integer buildingNumber,
+                                               @RequestParam Integer flatNumber,
+                                               @RequestParam String phoneNumber){
+        Optional<User> tempUser = userService.getUserById(id);
+        if(tempUser.isPresent()){
+            tempUser.get().setEmail(email);
+            tempUser.get().setFirstName(firstName);
+            tempUser.get().setLastName(lastName);
+            tempUser.get().setBirthDate(LocalDate.of(
+                    Integer.parseInt(birthDate.substring(0,4)),
+                    Integer.parseInt(birthDate.substring(5,7)),
+                    Integer.parseInt(birthDate.substring(8,10))
+            ));
+            tempUser.get().setStreetName(streetName);
+            tempUser.get().setBuildingNumber(buildingNumber);
+            tempUser.get().setFlatNumber(flatNumber);
+            tempUser.get().setPhoneNumber(phoneNumber);
+            if(userService.updateUser(tempUser.get()))
+                return ResponseEntity.ok(tempUser.get());
+            throw new UserUpdateException("User with this email already exists : " + tempUser.get().getEmail());
+        }
+        throw new UserNotFoundException("User not found with this id : " + id);
+    }
 
 
-    @DeleteMapping("/all_users/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<User> deleteUser(@PathVariable(value = "id") Long id){
         Optional<User> tempUser = userService.getUserById(id);
         if(tempUser.isPresent()){
