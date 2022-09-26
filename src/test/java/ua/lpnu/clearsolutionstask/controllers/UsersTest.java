@@ -19,6 +19,7 @@ import ua.lpnu.clearsolutionstask.models.User;
 import ua.lpnu.clearsolutionstask.repo.UserService;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,13 +78,25 @@ class UsersTest {
 
     @Test
     void getAllUsers() throws Exception {
+        // date settings
+        LocalDate localDateTemp = LocalDate.now();
+        LocalDate fromDate = localDateTemp
+                .minus(Period.ofYears(23))
+                .minus(Period.ofMonths(localDateTemp.getMonthValue()-1))
+                .minus(Period.ofDays(localDateTemp.getDayOfMonth()-1));
+        LocalDate toDate = LocalDate.now().minus(Period.ofYears(19));
+
         // json format and method cases
         String resultJSON = mapper.writeValueAsString(userList);
+        String resultJSONFromTo = mapper.writeValueAsString(List.of(userList.get(0),userList.get(3)));
         when(userService.getAllUsers()).thenReturn(userList);
+        when(userService.getUsersAgeRange(fromDate,toDate)).thenReturn(List.of(userList.get(0),userList.get(3)));
 
         // requests
         this.mockMvc.perform(get("/all_users")).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().string(containsString(resultJSON)));
+        this.mockMvc.perform(get("/all_users?from=19&to=23")).andDo(print()).andExpect(status().isOk())
+                .andExpect(content().string(containsString(resultJSONFromTo)));
     }
 
     @Test
