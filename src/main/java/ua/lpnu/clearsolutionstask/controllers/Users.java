@@ -144,22 +144,23 @@ public class Users {
                                                @RequestParam Integer flatNumber,
                                                @RequestParam String phoneNumber){
         Optional<User> tempUser = userService.getUserById(id);
+        User compareUser;
+        try {
+            compareUser = new User(id,email, firstName, lastName, LocalDate.of(
+                    Integer.parseInt(birthDate.substring(0, 4)),
+                    Integer.parseInt(birthDate.substring(5, 7)),
+                    Integer.parseInt(birthDate.substring(8, 10))),
+                    streetName, buildingNumber, flatNumber, phoneNumber);
+        } catch (IndexOutOfBoundsException e){
+            throw new UserUpdateException("Incorrect date format : " + birthDate);
+        }
         if(tempUser.isPresent()){
-            tempUser.get().setEmail(email);
-            tempUser.get().setFirstName(firstName);
-            tempUser.get().setLastName(lastName);
-            tempUser.get().setBirthDate(LocalDate.of(
-                    Integer.parseInt(birthDate.substring(0,4)),
-                    Integer.parseInt(birthDate.substring(5,7)),
-                    Integer.parseInt(birthDate.substring(8,10))
-            ));
-            tempUser.get().setStreetName(streetName);
-            tempUser.get().setBuildingNumber(buildingNumber);
-            tempUser.get().setFlatNumber(flatNumber);
-            tempUser.get().setPhoneNumber(phoneNumber);
-            if(userService.updateUser(tempUser.get()))
-                return ResponseEntity.ok(tempUser.get());
-            throw new UserUpdateException("User with this email already exists : " + tempUser.get().getEmail());
+                if (tempUser.get().isDifferentByAllFields(compareUser)) {
+                    if (userService.updateUser(compareUser))
+                        return ResponseEntity.ok(compareUser);
+                    throw new UserUpdateException("User with this email already exists : " + email);
+                }
+                throw new UserUpdateException("All fields must be updated");
         }
         throw new UserNotFoundException("User not found with this id : " + id);
     }
